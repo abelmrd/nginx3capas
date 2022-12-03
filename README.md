@@ -1,5 +1,5 @@
 # práctica LEMP en tres capas con balanceador
-En esta práctica separaremos servidor de nginx, mysql, nfs y balanceador para dar mayor seguridad y control sobre nuestro entorno de trabajo, poder administrar mejor los picos de trabajo dirigiendo la carga a cualquiera de los dos servidores nginx que tendrán replicado el sitio que implementaremos. Utilizaremos NFS para alojar los datos del sitio web ahi, y dotar de una capa extra de seguridad.
+Con el fin de obtener mayor escalabilidad y funcionalidad,en esta práctica separaremos servidor de nginx, mysql, nfs y balanceador. También obtendremos mayor seguridad y control sobre nuestro entorno de trabajo, poder administrar mejor los picos de trabajo dirigiendo la carga a cualquiera de los dos servidores nginx que tendrán replicado el sitio que implementaremos en el NFS. Utilizaremos este servidor para alojar los datos del sitio web ahi, y dotar de una capa extra de seguridad, además del PHP.
 
 ## Primer paso: Vagrant
 Generamos un archivo vagrant con vagrant init
@@ -92,9 +92,10 @@ echo " Instalacion de php"
 ```
 Comentaremos brevemente, ya que todas las líneas del script están comentadas.
 
-* Actualización de paquetes y repositorios
-* Instalamos la versión de mysql actual, que previamente buscamos con apt search la versión de nuestro debian.
-
+* Actualización de paquetes y repositorios.
+* Instalamos la versión de mysql actual más adecuada para nuestro debian, que previamente buscamos con apt search.
+* Instalamos el interprete de php php-fpm y tambien el de sql, ya que esta tarea la haremos por socket tcp-ip y no en local.
+* Posteriormente instalaremos otros paquetes php que necesita nuestro cms, como php-mbstring php-gd php-xml..
 
 
 ## Conectividad entre máquinas
@@ -111,102 +112,66 @@ La ruta será la siguiente:
 El parámetro a modificar por la ip de nuestro servidor mysql/mariaDb
 ```bind-address            = 192.168.21.22```
 
-Una vez hecho, comprobamos que podemos conectarnos al servidor mysql con el usuario creado, desde el servidor nginx y desde el servidor replicado nginx2.
+Podemos conectarnos al servidor mysql para comprobar que hay conexión, aunque lo haremos después una vez modifiquemos la contraseña del administrador.
 ```
 mysql -u abel -p -h 192.168.21.22
 ```
 Todo correcto, es hora de implementar nuestra aplicación.
 
-## Implementación de aplicación
+## Configuración del servidor NFS
 
-Clonamos con git clone desde el repositorio proporcionado.
-```git clone https://github.com/josejuansanchez/iaw-práctica-lamp.git```
-#### Pasos para la aplicación
-1. Descargamos los archivos con git, los alojaremos en el home.
-2. Movemos los archivos de la aplicación a una nueva carpeta creada en /www/var/.
-En nuestra práctica será /www/var/apli.
-3. Movemos el adminer.php a esta misma ruta.
-4. Una vez que tenemos todos los archivos, podemos copiar o editar el archivo default situado en sites-available o en sites-enabled ya que son el mismo archivo, lo modificamos para decirle que la ruta nueva será /www/var/apli y no /html, ya que al no tener más sitios no tenemos necesidad de crear otro nuevo y crear el enlace.
-5. Tenemos que des comentar las líneas de php para que nos admita estos archivos.
- En nuestro caso utilizaremos un socket local para la interconexión entre nginx y php, ya que estará en la misma máquina y más rápido que el TCP/IP. Hay que comprobar que la versión que tenemos es la 7.4, ya que podría variar.
-```location ~ \.php$ {
-                include snippets/fastcgi-php.conf;
-                fastcgi_pass unix:/run/php/php7.4-fpm.sock;
-        }```
-6. También vamos añadir el index.php a la lista de index que permite nginx.
-La pondremos la primera para darle prioridad y que nos muestre el index.php si existe.
-```# Add index.php to the list if you are using PHP
-        index index.php index.html index.htm index.nginx-debian.html;```
-7. Modificamos el dueño de los archivos para dárselos a nginx estando en la ruta de los archivos. ```sudo chown -R www-data.www-data *```
-8. Configuramos el archivo config.php para indicarle los parámetros de nuestro usuario y base de datos que tiene que utilizar en la ejecución de la aplicación. Los definimos como abel y 11111111.
-9. Reiniciamos nginx
-```sudo systemctl restart nginx```
+Utilizaremos este servidor para alojar los archivos del sitio en un único servidor, teniendo así réplicas exactas y homogéneas de la página alojada.
+Este servidor propocionara los datos a los servidores nginx exportando una carpeta donde alojaremos nuestro sitio.
+### Pasos para exportar la carpeta
 
-#### Configuración de la base de datos
-1. Ejecutamos el script mysql_secure_installation para poner la contraseña de root. Una vez dentro creamos un usuario para dar acceso a nginx. En este caso habría que hacerlo para los dos servidores nginx, por tanto, las dos ips .21 y .30. Aunque sea el mismo usuario, debemos darle acceso desde ambas ips, o podemos usar % para darselo a todo.
-```CREATE USER 'abel'@'%' IDENTIFIED BY '11111111';```
-2. Le damos todos los privilegios al usuario y actualizamos privilegios .
-```GRANT ALL PRIVILEGES ON *.* TO 'abel'@'%'`;```
-```FLUSH PRIVILEGES;```
-3. Una vez creado el usuario, modificaremos el archivo database.sql para adecuarlo al usuario y contraseña que generamos para nuestro cliente. 
-4. Entramos en el servidor mysql desde nginx con ```mysql -u abel -p -h 192.168.21.22```
-5. Le decimos la ruta de donde tiene que importar la base de datos
-```source /home/vagrant/db/database.sql```
-6. Comprobamos que podemos hacer consultas, y que nos arroja los datos que previamente insertamos desde un navegador web.
-
-``````
-### Capturas de interconexión de máquinas
-
-#### Podemos ver el nombre de las diferentes máquinas y como ambas se pueden conectar con el usuario abel desde los diferentes servidores nginx.
-
-
-![](imagenes/ngin.PNG))
-![](imagenes/nginx.PNG)
-
-## Creación de balanceador de carga
-
-La configuración del servidor que actuara como balanceador, será nuestro frontal, por tanto, el único servidor visible de cara al usuario final. Para acceder a nuestros sitios web de nginx lo harán a través de esta ip.
-La configuración es sencilla, solo debemos configurar el archivo default de sites-available e implementar las siguientes líneas, o bien borrarlo y crear uno nuevo con este contenido:
-
-```      
-upstream backend {
-
- server 192.168.10.10;
- server 192.168.10.11;
-}
-
-server {
-
-
-        location / {
-        proxy_pass http://backend;
-        }
-}
+Para comenzar creamos la carpeta que vamos a exportar, en este caso la alojaremos en www/var .
+```sudo mkdir /var/www/drupal ```
+A continuación le asignamos los siguientes permisos:
+``` sudo chown nobody:nogroup /var/www/drupal ```
+Una vez hecho esto, vamos a modificar el archivo /etc/exports. Le indicaremos que carpeta y donde queremos compartirlo
+y a su vez los permisos que le daremos. El contenido será en mi caso :
+``` sudo nano /etc/exports ```
 ```
+var/www/drupal          192.168.20.10(rw,sync,no_subtree_check)
+var/www/drupal          192.168.20.11(rw,sync,no_subtree_check)
+```
+En último lugar reiniciarmos el servicio, y ya tendríamos el servicio funcionando.
+```sudo systemctl restart nfs-kernel-server
+```
+### Instalacíon de paquetes PHP
 
-### Contenido del archivo y algoritmo 
+Como comentamos anteriormente, nuestro gestor de contenido necesita instalar varias librerias php para utilizar nuestro CMS Drupal.
+Las instalaremos todas, aunque si algunas nos falta en el proceso de instalación nos las solicitará.
+```
+sudo apt install php-dom
+sudo apt install php-gd
+sudo apt install php-mbstring
+```
+También necesitamos crear la carpeta  para poder instalar las traducciones al español, que estará alojada en /sites/default/files/translations
+```sudo mkdir translations```
+Aplicamos cambio de propietario a www-data
+``` sudo chown -R www-data:www-data drupal```
 
-Lo podemos resumir como el archivo donde indicamos que servidores son los que tienen el sitio web, los cuales debe balancear.
-Ponemos las dos líneas de nuestros dos servidores. Le ponemos de nombre backend, por tanto, el proxy pass será el mismo.
-En este caso no definimos el orden que el balanceador tendrá a la hora de dirigir las peticiones del servidor.
-Por defecto utilizara el algoritmo round robin, que alternativamente va enviando cada petición a uno diferente de forma equitativa.
-En esta práctica he cambiado el contenido de la aplicación, añadiendo un "1" y un "2" en el texto "DEMO APP" en los distintos servidores, por lo que a la hora de actualizar podemos ver como aplica esta regla y cada vez nos muestra un servidor diferente sin tener en cuenta la cantidad de peticiones, saturación o cualquier otro algoritmo.
+## Configuración de los servidores Nginx
 
+El servidor nginx no interpretará el codigo php, por lo que unicamente configuraremos la carpeta de montaje de NFS, el archivo de configuración del sitio y algunos permisos.
 
-Descargamos drupal en el servidor NFS y lo descomprimimos con tar
- sudo wget https://ftp.drupal.org/files/projects/drupal-8.8.5.tar.gz
-    sudo tar -xvzf drupal-8.8.5.tar.gz
+- En primer lugar crearemos la carpeta que habiamos montado en el servidor nfs.
 
-Creamos la carpeta  para poder instalar las traducciones
-sudo mkdir translations
+``` sudo mkdir /var/www/drupal
+```
+- Una vez creada procedemos a montar la carpeta
+``` sudo mount 192.168.20.13:/var/www/drupal /var/www/drupal 
+```
+- Por último podemos comprobar con df -h que se esta montando el recurso.
 
-Cambiamos los permisos para darle acceso completo a nginx
-chown -R www-data:www-data drupal
+### Configuración del sitio
+- Generamos un nuevo sitio para nuestro drupal
 
-Generamos un nuevo sitio para nuestro drupal
-nano /etc/nginx/sites-available/drupal
+``nano /etc/nginx/sites-available/drupal``
 
-Una vez aplicada esta configuración, haremos un enlace para activar el sitio.
+El contenido sera el siguiente, donde definimos principalmente el socket a utilizar, la ubicación de la carpeta y la seguridad.
+```
 server {
     listen 80;
     listen [::]:80;
@@ -257,11 +222,85 @@ server {
         try_files $uri /index.php?$query_string;
     }
 }
+```
+- Una vez aplicada esta configuración, haremos un enlace para activar el sitio.
+``ln -s /etc/nginx/sites-available/drupal /etc/nginx/sites-enabled/```
+- El último paso sera descomentar la linea server_names_hash_bucket_size 64; del archivo /etc/nginx/nginx.conf
+- Una vez reiniciado nginx, tenemos acceso a nuestro drupal desde nuestra ip. 
 
-Activación del sitio
-ln -s /etc/nginx/sites-available/drupal /etc/nginx/sites-enabled/
+## Implementación de aplicación
 
-Descomentaremos la linea server_names_hash_bucket_size 64; del archivo nano /etc/nginx/nginx.conf
+#### Pasos para la instalación del gestor de contenido Drupal
 
-Una vez reiniciado nginx, tenemos acceso a nuestro drupal desde nuestra ip. Podemos instalarlo !
+1. Descargamos drupal en el servidor NFS y lo descomprimimos con tar
+ ``sudo wget https://ftp.drupal.org/files/projects/drupal-8.8.5.tar.gz
+    sudo tar -xvzf drupal-8.8.5.tar.gz ``
+2. Movemos los archivos de la aplicación a una nueva carpeta creada en /www/var/.
+En nuestra práctica será /www/var/drupal.
 
+
+# Add index.php to the list if you are using PHP
+        index index.php index.html index.htm index.nginx-debian.html;```
+7. Modificamos el dueño de los archivos para dárselos a nginx estando en la ruta de los archivos. ```sudo chown -R www-data.www-data *```
+8. Configuramos el archivo config.php para indicarle los parámetros de nuestro usuario y base de datos que tiene que utilizar en la ejecución de la aplicación. Los definimos como abel y 11111111.
+9. Reiniciamos nginx
+```sudo systemctl restart nginx```
+
+#### Configuración de la base de datos para Drupal
+1. Ejecutamos el script mysql_secure_installation para modificar la contraseña de root y dar mayor seguridad.
+2. Nos conectamos a la base de datos y creamos la base de datos y el usuario. En este caso sera drupaldb la base de datos, el usuario drupal y la contraseña 11111111. Veamos cuales serian los comandos a ejecutar en mysql.
+```CREATE DATABASE drupaldb;```
+```CREATE USER 'drupal'@'%' IDENTIFIED BY '11111111';```
+2. Le damos todos los privilegios al usuario y actualizamos privilegios .
+```GRANT ALL PRIVILEGES ON *drupaldb.* TO 'drupal'@'%'`;```
+```FLUSH PRIVILEGES;```
+
+
+Nota: lo ideal en una situación real sería proporcionar acceso sólo a los host que realmente tienen permiso para acceder a esta base de datos, que podríamos especificarlo con 'drupal'@'host'. Como vamos a implementarlo de modo local no es necesario hilar tan fino.
+
+
+
+
+
+
+
+Cambiamos los permisos para darle acceso completo a nginx
+chown -R www-data:www-data drupal
+
+
+
+
+
+
+
+
+
+
+## Creación de balanceador de carga
+
+La configuración del servidor que actuara como balanceador, será nuestro frontal, por tanto, el único servidor visible de cara al usuario final. Para acceder a nuestros sitios web de nginx lo harán a través de esta ip.
+La configuración es sencilla, solo debemos configurar el archivo default de sites-available e implementar las siguientes líneas, o bien borrarlo y crear uno nuevo con este contenido:
+
+```      
+upstream backend {
+
+ server 192.168.20.10;
+ server 192.168.20.11;
+}
+
+server {
+
+
+        location / {
+        proxy_pass http://backend;
+        }
+}
+```
+
+### Contenido del archivo y algoritmo 
+
+Lo podemos resumir como el archivo donde indicamos que servidores son los que tienen el sitio web, los cuales debe balancear.
+Ponemos las dos líneas de nuestros dos servidores. Le ponemos de nombre backend, por tanto, el proxy pass será el mismo.
+En este caso no definimos el orden que el balanceador tendrá a la hora de dirigir las peticiones del servidor.
+Por defecto utilizara el algoritmo round robin, que alternativamente va enviando cada petición a uno diferente de forma equitativa.
+En esta práctica he cambiado el contenido de la aplicación, añadiendo un "1" y un "2" en el texto "DEMO APP" en los distintos servidores, por lo que a la hora de actualizar podemos ver como aplica esta regla y cada vez nos muestra un servidor diferente sin tener en cuenta la cantidad de peticiones, saturación o cualquier otro algoritmo.
