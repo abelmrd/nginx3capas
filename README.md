@@ -130,13 +130,17 @@ Para comenzar creamos la carpeta que vamos a exportar, en este caso la alojaremo
 
 A continuación le asignamos los siguientes permisos:
 ``` sudo chown nobody:nogroup /var/www/drupal ```
+
 Una vez hecho esto, vamos a modificar el archivo /etc/exports. Le indicaremos que carpeta y donde queremos compartirlo
 y a su vez los permisos que le daremos. El contenido será en mi caso :
+
 ``` sudo nano /etc/exports ```
+
 ```
 var/www/drupal          192.168.20.10(rw,sync,no_subtree_check)
 var/www/drupal          192.168.20.11(rw,sync,no_subtree_check)
 ```
+
 En último lugar reiniciarmos el servicio, y ya tendríamos el servicio funcionando.
 ```sudo systemctl restart nfs-kernel-server
 ```
