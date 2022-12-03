@@ -154,7 +154,7 @@ sudo apt install php-mbstring
 ```
 También necesitamos crear la carpeta  para poder instalar las traducciones al español, que estará alojada en /sites/default/files/translations
 
-```sudo mkdir translations```
+```sudo mkdir /sites/default/files/translations```
 
 
 ## Configuración de los servidores Nginx
@@ -163,13 +163,11 @@ El servidor nginx no interpretará el codigo php, por lo que unicamente configur
 
 - En primer lugar crearemos la carpeta que habiamos montado en el servidor nfs.
 
-``` sudo mkdir /var/www/drupal
-```
+`` sudo mkdir /var/www/drupal ``
 
 - Una vez creada procedemos a montar la carpeta
 
-``` sudo mount 192.168.20.13:/var/www/drupal /var/www/drupal 
-```
+`` sudo mount 192.168.20.13:/var/www/drupal /var/www/drupal ``
 
 - Por último podemos comprobar con df -h que se esta montando el recurso.
 
