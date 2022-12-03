@@ -125,7 +125,9 @@ Este servidor propocionara los datos a los servidores nginx exportando una carpe
 ### Pasos para exportar la carpeta
 
 Para comenzar creamos la carpeta que vamos a exportar, en este caso la alojaremos en www/var .
-```sudo mkdir /var/www/drupal ```
+
+``sudo mkdir /var/www/drupal ``
+
 A continuación le asignamos los siguientes permisos:
 ``` sudo chown nobody:nogroup /var/www/drupal ```
 Una vez hecho esto, vamos a modificar el archivo /etc/exports. Le indicaremos que carpeta y donde queremos compartirlo
