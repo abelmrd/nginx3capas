@@ -260,8 +260,9 @@ server {
 
 1. Descargamos drupal en el servidor NFS y lo descomprimimos con tar
 
- ``sudo wget https://ftp.drupal.org/files/projects/drupal-8.8.5.tar.gz
-    sudo tar -xvzf drupal-8.8.5.tar.gz ``
+ ``sudo wget https://ftp.drupal.org/files/projects/drupal-8.8.5.tar.gz``
+
+   `` sudo tar -xvzf drupal-8.8.5.tar.gz ``
 
 2. Movemos los archivos de la aplicación a una nueva carpeta creada en /www/var/.
 En nuestra práctica será /www/var/drupal.
@@ -272,26 +273,8 @@ En nuestra práctica será /www/var/drupal.
 
 ``` sudo chown -R www-data:www-data drupal```
 
-9. Reiniciamos nginx
+4. Reiniciamos nginx
 ```sudo systemctl restart nginx```
-
-
-
-
-
-
-
-
-Cambiamos los permisos para darle acceso completo a nginx
-chown -R www-data:www-data drupal
-
-
-
-
-
-
-
-
 
 
 ## Creación de balanceador de carga
