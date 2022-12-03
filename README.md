@@ -39,11 +39,10 @@ echo " Actualizamos repositorios y paquetes"
     sudo apt update 
     sudo apt upgrade -y
 
-echo "Instalación de paquetes lemp. Nginx , mysql y php"
+echo "Instalación de paquetes lemp. Nginx "
       sudo apt -y install nginx 
     sudo systemctl reload nginx
     sudo apt -y install default-mysql-client
-    sudo apt -y install php-mysql
     sudo apt -y install nfs-common
     
 
@@ -53,8 +52,7 @@ echo "Instalación de paquetes lemp. Nginx , mysql y php"
 * En este script vamos a actualizar repositorios y paquetes con update y upgrade.
 * Instalaremos nginx mostrando algunos mensajes al usuario.
 * Instalamos también mysql para conectarnos al servidor
-* Una vez instalado sigue instalando PHP
-* El módulo PHP-FPM lo instalaremos en NFS y utilizaremos el socket tcp para su funcionamiento.
+* El módulo PHP-FPM lo instalaremos en NFS y utilizaremos el socket tcp para su funcionamiento. También el php-mysql.
 * En el balanceador solamente instalaremos nginx, por lo que usamos este script quitando NFS y PHP.
 
 
@@ -193,3 +191,77 @@ Ponemos las dos líneas de nuestros dos servidores. Le ponemos de nombre backend
 En este caso no definimos el orden que el balanceador tendrá a la hora de dirigir las peticiones del servidor.
 Por defecto utilizara el algoritmo round robin, que alternativamente va enviando cada petición a uno diferente de forma equitativa.
 En esta práctica he cambiado el contenido de la aplicación, añadiendo un "1" y un "2" en el texto "DEMO APP" en los distintos servidores, por lo que a la hora de actualizar podemos ver como aplica esta regla y cada vez nos muestra un servidor diferente sin tener en cuenta la cantidad de peticiones, saturación o cualquier otro algoritmo.
+
+
+Descargamos drupal en el servidor NFS y lo descomprimimos con tar
+ sudo wget https://ftp.drupal.org/files/projects/drupal-8.8.5.tar.gz
+    sudo tar -xvzf drupal-8.8.5.tar.gz
+
+Creamos la carpeta  para poder instalar las traducciones
+sudo mkdir translations
+
+Cambiamos los permisos para darle acceso completo a nginx
+chown -R www-data:www-data drupal
+
+Generamos un nuevo sitio para nuestro drupal
+nano /etc/nginx/sites-available/drupal
+
+Una vez aplicada esta configuración, haremos un enlace para activar el sitio.
+server {
+    listen 80;
+    listen [::]:80;
+    root /var/www/drupal;
+    index  index.php index.html index.htm;
+    server_name  _;
+    client_max_body_size 100M;
+    autoindex off;
+    location ~ \..*/.*\.php$ {
+        return 403;
+    }
+    location ~ ^/sites/.*/private/ {
+        return 403;
+    }
+    # Block access to scripts in site files directory
+    location ~ ^/sites/[^/]+/files/.*\.php$ {
+        deny all;
+    }
+    location ~ (^|/)\. {
+        return 403;
+    }
+
+    location / {
+        try_files $uri /index.php?$query_string;
+    }
+
+    location @rewrite {
+        rewrite ^/(.*)$ /index.php?q=$1;
+    }
+
+    # Don't allow direct access to PHP files in the vendor directory.
+    location ~ /vendor/.*\.php$ {
+        deny all;
+        return 404;
+    }
+
+    location ~ '\.php$|^/update.php' {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass 192.168.20.13:9000;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location ~ ^/sites/.*/files/styles/ { # For Drupal >= 7
+        try_files $uri @rewrite;
+    }
+    location ~ ^(/[a-z\-]+)?/system/files/ { # For Drupal >= 7
+        try_files $uri /index.php?$query_string;
+    }
+}
+
+Activación del sitio
+ln -s /etc/nginx/sites-available/drupal /etc/nginx/sites-enabled/
+
+Descomentaremos la linea server_names_hash_bucket_size 64; del archivo nano /etc/nginx/nginx.conf
+
+Una vez reiniciado nginx, tenemos acceso a nuestro drupal desde nuestra ip. Podemos instalarlo !
+
