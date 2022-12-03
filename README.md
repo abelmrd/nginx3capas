@@ -156,6 +156,19 @@ También necesitamos crear la carpeta  para poder instalar las traducciones al e
 
 ```sudo mkdir /sites/default/files/translations```
 
+## Configuración de la base de datos para Drupal
+1. Ejecutamos el script mysql_secure_installation para modificar la contraseña de root y dar mayor seguridad.
+2. Nos conectamos a la base de datos y creamos la base de datos y el usuario. En este caso sera drupaldb la base de datos, el usuario drupal y la contraseña 11111111. Veamos cuales serian los comandos a ejecutar en mysql.
+```CREATE DATABASE drupaldb;```
+```CREATE USER 'drupal'@'%' IDENTIFIED BY '11111111';```
+2. Le damos todos los privilegios al usuario y actualizamos privilegios .
+```GRANT ALL PRIVILEGES ON *drupaldb.* TO 'drupal'@'%'`;```
+```FLUSH PRIVILEGES;```
+
+
+Nota: lo ideal en una situación real sería proporcionar acceso sólo a los host que realmente tienen permiso para acceder a esta base de datos, que podríamos especificarlo con 'drupal'@'host'. Como vamos a implementarlo de modo local no es necesario hilar tan fino.
+
+
 
 ## Configuración de los servidores Nginx
 
@@ -257,17 +270,6 @@ En nuestra práctica será /www/var/drupal.
 9. Reiniciamos nginx
 ```sudo systemctl restart nginx```
 
-#### Configuración de la base de datos para Drupal
-1. Ejecutamos el script mysql_secure_installation para modificar la contraseña de root y dar mayor seguridad.
-2. Nos conectamos a la base de datos y creamos la base de datos y el usuario. En este caso sera drupaldb la base de datos, el usuario drupal y la contraseña 11111111. Veamos cuales serian los comandos a ejecutar en mysql.
-```CREATE DATABASE drupaldb;```
-```CREATE USER 'drupal'@'%' IDENTIFIED BY '11111111';```
-2. Le damos todos los privilegios al usuario y actualizamos privilegios .
-```GRANT ALL PRIVILEGES ON *drupaldb.* TO 'drupal'@'%'`;```
-```FLUSH PRIVILEGES;```
-
-
-Nota: lo ideal en una situación real sería proporcionar acceso sólo a los host que realmente tienen permiso para acceder a esta base de datos, que podríamos especificarlo con 'drupal'@'host'. Como vamos a implementarlo de modo local no es necesario hilar tan fino.
 
 
 
