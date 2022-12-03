@@ -159,10 +159,15 @@ También necesitamos crear la carpeta  para poder instalar las traducciones al e
 ## Configuración de la base de datos para Drupal
 1. Ejecutamos el script mysql_secure_installation para modificar la contraseña de root y dar mayor seguridad.
 2. Nos conectamos a la base de datos y creamos la base de datos y el usuario. En este caso sera drupaldb la base de datos, el usuario drupal y la contraseña 11111111. Veamos cuales serian los comandos a ejecutar en mysql.
+
 ```CREATE DATABASE drupaldb;```
+
 ```CREATE USER 'drupal'@'%' IDENTIFIED BY '11111111';```
+
 2. Le damos todos los privilegios al usuario y actualizamos privilegios .
+
 ```GRANT ALL PRIVILEGES ON *drupaldb.* TO 'drupal'@'%'`;```
+
 ```FLUSH PRIVILEGES;```
 
 
