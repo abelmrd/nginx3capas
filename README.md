@@ -142,9 +142,11 @@ var/www/drupal          192.168.20.10(rw,sync,no_subtree_check)
 var/www/drupal          192.168.20.11(rw,sync,no_subtree_check)
 ```
 
-En último lugar reiniciarmos el servicio, y ya tendríamos el servicio funcionando.
-```sudo systemctl restart nfs-kernel-server
-```
+En último lugar reiniciarmos el servicio, y ya tendríamos el servicio funcionando en el servidor, faltaria montar los clientes.
+
+``sudo systemctl restart nfs-kernel-server
+``
+
 ### Instalacíon de paquetes PHP
 
 Como comentamos anteriormente, nuestro gestor de contenido necesita instalar varias librerias php para utilizar nuestro CMS Drupal.
