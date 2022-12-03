@@ -229,23 +229,28 @@ server {
     }
 }
 ```
-- Una vez aplicada esta configuración, haremos un enlace para activar el sitio.
+- Una vez aplicada esta configuración, haremos un enlace para activar el sitio. También borraremos el default.
 
 ``ln -s /etc/nginx/sites-available/drupal /etc/nginx/sites-enabled/``
 
 - El último paso sera descomentar la linea server_names_hash_bucket_size 64; del archivo /etc/nginx/nginx.conf
-- Una vez reiniciado nginx, tenemos acceso a nuestro drupal desde nuestra ip. 
+- Una vez hecho, reiniciamos nginx y ya tenemos configurado el sitio para drupal. 
 
 ## Implementación de aplicación
 
 #### Pasos para la instalación del gestor de contenido Drupal
 
 1. Descargamos drupal en el servidor NFS y lo descomprimimos con tar
+
  ``sudo wget https://ftp.drupal.org/files/projects/drupal-8.8.5.tar.gz
     sudo tar -xvzf drupal-8.8.5.tar.gz ``
+
 2. Movemos los archivos de la aplicación a una nueva carpeta creada en /www/var/.
 En nuestra práctica será /www/var/drupal.
-3. Aplicamos cambio de propietario a www-data
+
+``mv * /var/www/drupal``
+
+3. Aplicamos cambio de propietario a toda la carpeta para dar permisos a nginx.
 
 ``` sudo chown -R www-data:www-data drupal```
 
