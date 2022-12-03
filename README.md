@@ -128,10 +128,6 @@ Para comenzar creamos la carpeta que vamos a exportar, en este caso la alojaremo
 
 ``sudo mkdir /var/www/drupal ``
 
-A continuación le asignamos los siguientes permisos:
-
-``` sudo chown nobody:nogroup /var/www/drupal ```
-
 Una vez hecho esto, vamos a modificar el archivo /etc/exports. Le indicaremos que carpeta y donde queremos compartirlo
 y a su vez los permisos que le daremos. El contenido será en mi caso :
 
@@ -147,7 +143,7 @@ En último lugar reiniciarmos el servicio, y ya tendríamos el servicio funciona
 ``sudo systemctl restart nfs-kernel-server
 ``
 
-### Instalacíon de paquetes PHP
+### Instalacíon de paquetes PHP en NFS
 
 Como comentamos anteriormente, nuestro gestor de contenido necesita instalar varias librerias php para utilizar nuestro CMS Drupal.
 Las instalaremos todas, aunque si algunas nos falta en el proceso de instalación nos las solicitará.
@@ -157,9 +153,9 @@ sudo apt install php-gd
 sudo apt install php-mbstring
 ```
 También necesitamos crear la carpeta  para poder instalar las traducciones al español, que estará alojada en /sites/default/files/translations
+
 ```sudo mkdir translations```
-Aplicamos cambio de propietario a www-data
-``` sudo chown -R www-data:www-data drupal```
+
 
 ## Configuración de los servidores Nginx
 
@@ -169,9 +165,12 @@ El servidor nginx no interpretará el codigo php, por lo que unicamente configur
 
 ``` sudo mkdir /var/www/drupal
 ```
+
 - Una vez creada procedemos a montar la carpeta
+
 ``` sudo mount 192.168.20.13:/var/www/drupal /var/www/drupal 
 ```
+
 - Por último podemos comprobar con df -h que se esta montando el recurso.
 
 ### Configuración del sitio
@@ -246,6 +245,9 @@ server {
     sudo tar -xvzf drupal-8.8.5.tar.gz ``
 2. Movemos los archivos de la aplicación a una nueva carpeta creada en /www/var/.
 En nuestra práctica será /www/var/drupal.
+3. Aplicamos cambio de propietario a www-data
+
+``` sudo chown -R www-data:www-data drupal```
 
 
 # Add index.php to the list if you are using PHP
