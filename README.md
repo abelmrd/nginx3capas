@@ -254,11 +254,6 @@ En nuestra práctica será /www/var/drupal.
 
 ``` sudo chown -R www-data:www-data drupal```
 
-
-# Add index.php to the list if you are using PHP
-        index index.php index.html index.htm index.nginx-debian.html;```
-7. Modificamos el dueño de los archivos para dárselos a nginx estando en la ruta de los archivos. ```sudo chown -R www-data.www-data *```
-8. Configuramos el archivo config.php para indicarle los parámetros de nuestro usuario y base de datos que tiene que utilizar en la ejecución de la aplicación. Los definimos como abel y 11111111.
 9. Reiniciamos nginx
 ```sudo systemctl restart nginx```
 
