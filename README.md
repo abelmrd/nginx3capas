@@ -230,7 +230,9 @@ server {
 }
 ```
 - Una vez aplicada esta configuración, haremos un enlace para activar el sitio.
-``ln -s /etc/nginx/sites-available/drupal /etc/nginx/sites-enabled/```
+
+``ln -s /etc/nginx/sites-available/drupal /etc/nginx/sites-enabled/``
+
 - El último paso sera descomentar la linea server_names_hash_bucket_size 64; del archivo /etc/nginx/nginx.conf
 - Una vez reiniciado nginx, tenemos acceso a nuestro drupal desde nuestra ip. 
 
