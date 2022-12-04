@@ -247,6 +247,8 @@ server {
     }
 }
 ```
+
+- Comprobamos que la configuración es correcta con el comando ``nginx -t ``
 - Una vez aplicada esta configuración, haremos un enlace para activar el sitio. También borraremos el default.
 
 ``ln -s /etc/nginx/sites-available/drupal /etc/nginx/sites-enabled/``
