@@ -1,7 +1,13 @@
-# práctica LEMP en tres capas con balanceador
+# Indice
+**Índice**   
+1. [Objetivo](#id1)
+2. [Configuración Vagrant](#id2)
+
+
+# práctica LEMP en tres capas con balanceador <a name="id1"></a>
 Con el fin de obtener mayor escalabilidad y funcionalidad,en esta práctica separaremos servidor de nginx, mysql, nfs y balanceador. También obtendremos mayor seguridad y control sobre nuestro entorno de trabajo, poder administrar mejor los picos de trabajo dirigiendo la carga a cualquiera de los dos servidores nginx que tendrán replicado el sitio que implementaremos en el NFS. Utilizaremos este servidor para alojar los datos del sitio web ahi, y dotar de una capa extra de seguridad, además del PHP.
 
-## Primer paso: Vagrant
+## Primer paso: Vagrant <a name="id2"></a>
 Generamos un archivo vagrant con vagrant init
 Vamos a explicar las líneas que modificamos o añadimos según las necesidades del proyecto
 
@@ -307,3 +313,24 @@ Ponemos las dos líneas de nuestros dos servidores. Le ponemos de nombre backend
 En este caso no definimos el orden que el balanceador tendrá a la hora de dirigir las peticiones del servidor.
 Por defecto utilizara el algoritmo round robin, que alternativamente va enviando cada petición a uno diferente de forma equitativa.
 En esta práctica he cambiado el contenido de la aplicación, añadiendo un "1" y un "2" en el texto "DEMO APP" en los distintos servidores, por lo que a la hora de actualizar podemos ver como aplica esta regla y cada vez nos muestra un servidor diferente sin tener en cuenta la cantidad de peticiones, saturación o cualquier otro algoritmo.
+
+
+mkdir /etc/nginx/certificate
+cd /etc/nginx/certificate
+openssl req -new -newkey rsa:4096 -x509 -sha256 -days 365 -nodes -out nginx-certificate.crt -keyout nginx.key
+
+server {
+        listen 443 ssl default_server;
+        listen [::]:443 ssl default_server;
+        ssl_certificate /etc/nginx/certificate/nginx-certificate.crt;
+        ssl_certificate_key /etc/nginx/certificate/nginx.key;
+        root /var/www/html;
+        index index.html index.htm index.nginx-debian.html;
+        server_name _;
+        location / {
+                try_files $uri $uri/ =404;
+        }
+}
+
+
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/drupal.key -out /etc/ssl/certs/drupal.pem
