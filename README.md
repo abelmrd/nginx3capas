@@ -8,11 +8,14 @@
     3. [Script NFS](#id6)
 4. [Pruebas de conectividad](#id7)
 5. [Configuración servidor NFS](#id8)
-    5. 1. [Exportar carpeta](#id9)
-6. 
-7. 
-8. 
-9. [Balanceador de carga](#id9)
+    1. [Exportar carpeta](#id9)
+    2. [Paquetes PHP](#id10)
+6. [Configuración servidor MYSQL](#id11)
+7. [Configuración servidor Nginx](#id12)
+    1. [Configuración del sitio](#id13)
+8. [Implementación de la aplicación](#id14)
+9. [Balanceador de carga](#id15)
+10. [Servidor en modo seguro](#id16)
 
 
 # práctica LEMP en tres capas con balanceador <a name="id1"></a>
@@ -165,6 +168,7 @@ En último lugar reiniciarmos el servicio, y ya tendríamos el servicio funciona
 Como comentamos anteriormente, nuestro gestor de contenido necesita instalar varias librerias php para utilizar nuestro CMS Drupal.
 Las instalaremos todas, aunque si algunas nos falta en el proceso de instalación nos las solicitará.
 ```
+sudo apt install php
 sudo apt install php-dom
 sudo apt install php-gd
 sudo apt install php-mbstring
@@ -344,4 +348,15 @@ server {
 }
 
 
+## Puesta en marcha del modo seguro a nuestra aplicación <a name="id16"></a>
+
+Con esta última y definitiva configuración en el balanceador, tendremos el sistema funcionando en modo cifrado SSL.
+El certificado lo generaremos nosotros mismos en local, para un ejemplo real habria que utilizar alguna certificadora como cerftbot.
+
+El comando a utilizar sera el siguiente, donde le decimos el nombre que va a generar y tambien la ruta donde lo va a depositar.
+
+``
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/drupal.key -out /etc/ssl/certs/drupal.pem
+``
+
+La configuración del balanceador por tanto será la siguiente ;
