@@ -8,6 +8,7 @@
     3. [Script NFS](#id6)
 4. [Pruebas de conectividad](#id7)
 5. [Configuración servidor NFS](#id8)
+    5. 1. [Exportar carpeta](#id9)
 6. 
 7. 
 8. 
