@@ -4,8 +4,8 @@
 2. [Configuración Vagrant](#id2)
 3. [Script de aprovisionamiento](#id3)
 3. 1. [Script Nginx](#id4)
-3. 1. [Script Mysql](#id5)
-3. 1. [Script NFS](#id6)
+3. 2. [Script Mysql](#id5)
+3. 3. [Script NFS](#id6)
 4. [Pruebas de conectividad](#id7)
 5. [Configuración servidor NFS](#id8)
 6. 
