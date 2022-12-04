@@ -1,7 +1,17 @@
-# Indice
-**Índice**   
+# Índice
+  
 1. [Objetivo](#id1)
 2. [Configuración Vagrant](#id2)
+3. [Script de aprovisionamiento](#id3)
+3. 1. [Script Nginx](#id4)
+3. 1. [Script Mysql](#id5)
+3. 1. [Script NFS](#id6)
+4. [Pruebas de conectividad](#id7)
+5. [Configuración servidor NFS](#id8)
+6. 
+7. 
+8. 
+9. [Balanceador de carga](#id9)
 
 
 # práctica LEMP en tres capas con balanceador <a name="id1"></a>
@@ -36,8 +46,8 @@ Vamos a explicar las líneas que modificamos o añadimos según las necesidades 
 Para dar un entorno listo para comenzar a configurar aprovisionaremos con dos scripts que previamente hemos hecho para ambas máquinas, al estar en la ruta del vagrant con poner el nombre en el path es suficiente.
 
 
-## Scripts de aprovisionamiento
-### Script nginx
+## Scripts de aprovisionamiento <a name="id3"></a>
+### Script nginx <a name="id4"></a>
 
 ```
 echo " Actualizamos repositorios y paquetes"
@@ -63,7 +73,7 @@ echo "Instalación de paquetes lemp. Nginx "
 
 
 
-### Script servidor Mysql
+### Script servidor Mysql <a name="id5"></a>
 
 ```
 echo " Actualizamos paquetes"
@@ -83,7 +93,7 @@ Comentaremos brevemente, ya que todas las líneas del script están comentadas.
 
 
 
-### Script servidor NFS
+### Script servidor NFS <a name="id6"></a>
 
 ```
 echo "Instalacion de paquetes NFS"
@@ -104,7 +114,7 @@ Comentaremos brevemente, ya que todas las líneas del script están comentadas.
 * Posteriormente instalaremos otros paquetes php que necesita nuestro cms, como php-mbstring php-gd php-xml..
 
 
-## Conectividad entre máquinas
+## Conectividad entre máquinas <a name="id7"></a>
 
 Una vez comprobado que se instala todo sin problemas, vamos a realizar un ping entre ambos equipos.
 ``` Ping 192.168.21.22 ```
@@ -124,11 +134,11 @@ mysql -u abel -p -h 192.168.21.22
 ```
 Todo correcto, es hora de implementar nuestra aplicación.
 
-## Configuración del servidor NFS
+## Configuración del servidor NFS <a name="id8"></a>
 
 Utilizaremos este servidor para alojar los archivos del sitio en un único servidor, teniendo así réplicas exactas y homogéneas de la página alojada.
 Este servidor propocionara los datos a los servidores nginx exportando una carpeta donde alojaremos nuestro sitio.
-### Pasos para exportar la carpeta
+### Pasos para exportar la carpeta <a name="id9"></a>
 
 Para comenzar creamos la carpeta que vamos a exportar, en este caso la alojaremos en www/var .
 
@@ -149,7 +159,7 @@ En último lugar reiniciarmos el servicio, y ya tendríamos el servicio funciona
 ``sudo systemctl restart nfs-kernel-server
 ``
 
-### Instalacíon de paquetes PHP en NFS
+### Instalacíon de paquetes PHP en NFS <a name="id10"></a>
 
 Como comentamos anteriormente, nuestro gestor de contenido necesita instalar varias librerias php para utilizar nuestro CMS Drupal.
 Las instalaremos todas, aunque si algunas nos falta en el proceso de instalación nos las solicitará.
@@ -162,7 +172,7 @@ También necesitamos crear la carpeta  para poder instalar las traducciones al e
 
 ```sudo mkdir /sites/default/files/translations```
 
-## Configuración de la base de datos para Drupal
+## Configuración de la base de datos para Drupal <a name="id11"></a>
 1. Ejecutamos el script mysql_secure_installation para modificar la contraseña de root y dar mayor seguridad.
 2. Nos conectamos a la base de datos y creamos la base de datos y el usuario. En este caso sera drupaldb la base de datos, el usuario drupal y la contraseña 11111111. Veamos cuales serian los comandos a ejecutar en mysql.
 
@@ -181,7 +191,7 @@ Nota: lo ideal en una situación real sería proporcionar acceso sólo a los hos
 
 
 
-## Configuración de los servidores Nginx
+## Configuración de los servidores Nginx <a name="id12"></a>
 
 El servidor nginx no interpretará el codigo php, por lo que unicamente configuraremos la carpeta de montaje de NFS, el archivo de configuración del sitio y algunos permisos.
 
@@ -195,8 +205,8 @@ El servidor nginx no interpretará el codigo php, por lo que unicamente configur
 
 - Por último podemos comprobar con df -h que se esta montando el recurso.
 
-### Configuración del sitio
-- Generamos un nuevo sitio para nuestro drupal
+### Configuración del sitio <a name="id13"></a>
+- Generamos un nuevo sitio para nuestro drupal en el servidor nginx
 
 ``nano /etc/nginx/sites-available/drupal``
 
@@ -262,7 +272,7 @@ server {
 - El último paso sera descomentar la linea server_names_hash_bucket_size 64; del archivo /etc/nginx/nginx.conf
 - Una vez hecho, reiniciamos nginx y ya tenemos configurado el sitio para drupal. 
 
-## Implementación de aplicación
+## Implementación de aplicación <a name="id14"></a>
 
 #### Pasos para la instalación del gestor de contenido Drupal
 
@@ -285,7 +295,7 @@ En nuestra práctica será /www/var/drupal.
 ```sudo systemctl restart nginx```
 
 
-## Creación de balanceador de carga
+## Creación de balanceador de carga <a name="id15"></a>
 
 La configuración del servidor que actuara como balanceador, será nuestro frontal, por tanto, el único servidor visible de cara al usuario final. Para acceder a nuestros sitios web de nginx lo harán a través de esta ip.
 La configuración es sencilla, solo debemos configurar el archivo default de sites-available e implementar las siguientes líneas, o bien borrarlo y crear uno nuevo con este contenido:
