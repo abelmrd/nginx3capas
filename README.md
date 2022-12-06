@@ -373,7 +373,7 @@ Definiremos el puerto de escucha como el 443, le indicaremos donde estan los cer
 y por ultimo le decimos al servidor que el certificado ha sido verificado.
 Por tanto la configuración del sitio en el balanceador será la siguiente:
 
-``
+```
 upstream backend {
  server 192.168.20.10;
  server 192.168.20.11;
@@ -399,7 +399,8 @@ location / {
 proxy_ssl_trusted_certificate /etc/ssl/private/drupal.key;
 }
 }
-``
+
+```
 
 #### Contenido del github  <a name="id17"></a>
 
