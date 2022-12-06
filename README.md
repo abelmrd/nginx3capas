@@ -34,8 +34,13 @@
 
 
 
-# práctica LEMP en tres capas con balanceador <a name="id1"></a>
+# Práctica LEMP en cuatro capas <a name="id1"></a>
 Con el fin de obtener mayor escalabilidad y funcionalidad,en esta práctica separaremos servidor de nginx, mysql, nfs y balanceador. También obtendremos mayor seguridad y control sobre nuestro entorno de trabajo, poder administrar mejor los picos de trabajo dirigiendo la carga a cualquiera de los dos servidores nginx que tendrán replicado el sitio que implementaremos en el NFS. Utilizaremos este servidor para alojar los datos del sitio web ahi, y dotar de una capa extra de seguridad, además del PHP.
+Las capas serán:
++ Balanceador, al que accede el usuario
++ Servidor web Nginx
++ Servidor NFS
++ Servidor Mysql
 
 ## Primer paso: Vagrant <a name="id2"></a>
 Generamos un archivo vagrant con vagrant init
