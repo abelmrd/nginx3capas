@@ -150,6 +150,9 @@ Comentaremos brevemente, ya que todas las líneas del script están comentadas.
 Una vez comprobado que se instala todo sin problemas, vamos a realizar un ping entre ambos equipos.
 ``` Ping 192.168.21.22 ```
 Al ejecutar desde nginx y desde nginx2 (192.168.21.21-30) nos da respuesta.
+También probamos la conexión entre el servidor NFS y ambas máquinas de nginx. Con mysql también tendrá conexión, tiene que conectarse
+con la base de datos. Al definir el nombre de las redes virtuales, todo queda encapsulado.
+Todos los equipos dan ping entre ellos, a excepción del balanceador con mysql que efectivamente no debe dar ping.
 
 Para mostrarle al servidor Mysql cual es la ip donde tiene que permitir conexiones buscaremos el archivo "50-server.cnf" para cambiar este parámetro por la ip del servidor mysql. 
 La ruta será la siguiente:
