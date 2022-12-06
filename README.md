@@ -1,3 +1,10 @@
+![](imagenes/portada.PNG)
+
+
+
+
+
+
 # Índice
   
 1. [Objetivo](#id1)
@@ -53,7 +60,7 @@ Vamos a explicar las líneas que modificamos o añadimos según las necesidades 
 
 * Utilizaremos una debian bullseye.
 * Le asignamos el nombre al servidor que nos requiere la práctica. 
-* En este servidor añadimos interfaz pública y privada, ya que requiere salida a exterior y también conectarse al equipo MYSQL en red local. Este último servidor solo tendrá la red privada, por tanto, un único adaptador de red, con una ip local 192.168.21.22 /24 .
+* En este servidor añadimos interfaz pública y privada, ya que requiere salida a exterior y también conectarse al equipo MYSQL en red local. Este último servidor sólo tendrá la red privada, por tanto, un único adaptador de red, con una ip local 192.168.21.22 /24 .
 * En ambos casos definimos como la carpeta compartida la ruta /vagrant
 Para dar un entorno listo para comenzar a configurar aprovisionaremos con dos scripts que previamente hemos hecho para ambas máquinas, al estar en la ruta del vagrant con poner el nombre en el path es suficiente.
 
@@ -171,6 +178,17 @@ En último lugar reiniciarmos el servicio, y ya tendríamos el servicio funciona
 ``sudo systemctl restart nfs-kernel-server
 ``
 
+#### Configuración de puerto para php
+
+Editaremos el archivo ubicado en /etc/php/7.4/fpm/pool.d/www.conf para cambiar la directiva listen.
+Le pondremos el valor 0.0.0.0:9000 para que escuche cualquier ip por ese puerto, que será el que utilizaremos para 
+comunicar las máquinas y que el php sea interpretado por el servidor NFS en lugar del nginx.
+
+``
+ sudo nano /etc/php/7.4/fpm/pool.d/www.conf
+ listen = 0.0.0.0:9000
+``
+
 ### Instalacíon de paquetes PHP en NFS <a name="id10"></a>
 
 Como comentamos anteriormente, nuestro gestor de contenido necesita instalar varias librerias php para utilizar nuestro CMS Drupal.
@@ -187,7 +205,7 @@ También necesitamos crear la carpeta  para poder instalar las traducciones al e
 
 ## Configuración de la base de datos para Drupal <a name="id11"></a>
 1. Ejecutamos el script mysql_secure_installation para modificar la contraseña de root y dar mayor seguridad.
-2. Nos conectamos a la base de datos y creamos la base de datos y el usuario. En este caso sera drupaldb la base de datos, el usuario drupal y la contraseña 11111111. Veamos cuales serian los comandos a ejecutar en mysql.
+2. Nos conectamos a la base de datos y creamos la base de datos y el usuario. En este caso será drupaldb la base de datos, el usuario drupal y la contraseña 11111111. Veamos cuales serian los comandos a ejecutar en mysql.
 
 ```CREATE DATABASE drupaldb;```
 
@@ -223,7 +241,7 @@ El servidor nginx no interpretará el codigo php, por lo que unicamente configur
 
 ``nano /etc/nginx/sites-available/drupal``
 
-El contenido sera el siguiente, donde definimos principalmente el socket a utilizar, la ubicación de la carpeta y la seguridad.
+El contenido será el siguiente, donde definimos principalmente el socket a utilizar, la ubicación de la carpeta y la seguridad.
 ```
 server {
     listen 80;
@@ -282,7 +300,7 @@ server {
 
 ``ln -s /etc/nginx/sites-available/drupal /etc/nginx/sites-enabled/``
 
-- El último paso sera descomentar la linea server_names_hash_bucket_size 64; del archivo /etc/nginx/nginx.conf
+- El último paso será descomentar la linea server_names_hash_bucket_size 64; del archivo /etc/nginx/nginx.conf
 - Una vez hecho, reiniciamos nginx y ya tenemos configurado el sitio para drupal. 
 
 ## Implementación de aplicación <a name="id14"></a>
@@ -311,7 +329,7 @@ En nuestra práctica será /www/var/drupal.
 ## Creación de balanceador de carga <a name="id15"></a>
 
 La configuración del servidor que actuara como balanceador, será nuestro frontal, por tanto, el único servidor visible de cara al usuario final. Para acceder a nuestros sitios web de nginx lo harán a través de esta ip.
-La configuración es sencilla, solo debemos configurar el archivo default de sites-available e implementar las siguientes líneas, o bien borrarlo y crear uno nuevo con este contenido:
+La configuración es sencilla, sólo debemos configurar el archivo default de sites-available e implementar las siguientes líneas, o bien borrarlo y crear uno nuevo con este contenido:
 
 ```      
 upstream backend {
@@ -338,33 +356,46 @@ Por defecto utilizara el algoritmo round robin, que alternativamente va enviando
 En esta práctica he cambiado el contenido de la aplicación, añadiendo un "1" y un "2" en el texto "DEMO APP" en los distintos servidores, por lo que a la hora de actualizar podemos ver como aplica esta regla y cada vez nos muestra un servidor diferente sin tener en cuenta la cantidad de peticiones, saturación o cualquier otro algoritmo.
 
 
-mkdir /etc/nginx/certificate
-cd /etc/nginx/certificate
-openssl req -new -newkey rsa:4096 -x509 -sha256 -days 365 -nodes -out nginx-certificate.crt -keyout nginx.key
-
-server {
-        listen 443 ssl default_server;
-        listen [::]:443 ssl default_server;
-        ssl_certificate /etc/nginx/certificate/nginx-certificate.crt;
-        ssl_certificate_key /etc/nginx/certificate/nginx.key;
-        root /var/www/html;
-        index index.html index.htm index.nginx-debian.html;
-        server_name _;
-        location / {
-                try_files $uri $uri/ =404;
-        }
-}
-
 
 ## Puesta en marcha del modo seguro a nuestra aplicación <a name="id16"></a>
 
 Con esta última y definitiva configuración en el balanceador, tendremos el sistema funcionando en modo cifrado SSL.
 El certificado lo generaremos nosotros mismos en local, para un ejemplo real habria que utilizar alguna certificadora como cerftbot.
 
-El comando a utilizar sera el siguiente, donde le decimos el nombre que va a generar y tambien la ruta donde lo va a depositar.
+El comando a utilizar será el siguiente, donde le decimos el nombre que va a generar y tambien la ruta donde lo va a depositar.
 
 ``
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/drupal.key -out /etc/ssl/certs/drupal.pem
 ``
 
-La configuración del balanceador por tanto será la siguiente ;
+Definiremos el puerto de escucha como el 443, le indicaremos donde estan los certificados generados con el comando anterior
+y por ultimo le decimos al servidor que el certificado ha sido verificado.
+Por tanto la configuración del sitio en el balanceador será la siguiente:
+
+``
+upstream backend {
+ server 192.168.20.10;
+ server 192.168.20.11;
+}
+server {
+        listen 80;
+        listen [::]:80;
+         location / {
+        proxy_pass http://backend;
+        }
+}
+
+server {
+
+listen 443 ssl;
+listen [::]:443 ssl;
+
+ssl_certificate     /etc/ssl/certs/drupal.pem;
+ssl_certificate_key /etc/ssl/private/drupal.key;
+
+location / {
+    proxy_pass                http://backend;
+proxy_ssl_trusted_certificate /etc/ssl/private/drupal.key;
+}
+}
+``
