@@ -36,6 +36,7 @@
 
 # Práctica LEMP en cuatro capas <a name="id1"></a>
 Con el fin de obtener mayor escalabilidad y funcionalidad,en esta práctica separaremos servidor de nginx, mysql, nfs y balanceador. También obtendremos mayor seguridad y control sobre nuestro entorno de trabajo, poder administrar mejor los picos de trabajo dirigiendo la carga a cualquiera de los dos servidores nginx que tendrán replicado el sitio que implementaremos en el NFS. Utilizaremos este servidor para alojar los datos del sitio web ahi, y dotar de una capa extra de seguridad, además del PHP.
+
 Las capas serán:
 + Balanceador, al que accede el usuario
 + Servidor web Nginx
@@ -66,9 +67,11 @@ Vamos a explicar las líneas que modificamos o añadimos según las necesidades 
 
 * Utilizaremos una debian bullseye.
 * Le asignamos el nombre al servidor que nos requiere la práctica. 
-* En este servidor añadimos interfaz pública y privada, ya que requiere salida a exterior y también conectarse al equipo MYSQL en red local. Este último servidor sólo tendrá la red privada, por tanto, un único adaptador de red, con una ip local 192.168.21.22 /24 .
-* En ambos casos definimos como la carpeta compartida la ruta /vagrant
-Para dar un entorno listo para comenzar a configurar aprovisionaremos con dos scripts que previamente hemos hecho para ambas máquinas, al estar en la ruta del vagrant con poner el nombre en el path es suficiente.
+* En este servidor añadimos interfaz pública para descargar los paquetes. Luego se la quitaremos, solo el balanceador sera visible. Dos privadas para conectarse al equipo MYSQL en red local y al servidor NFS. 
+* En ambos casos definimos como la carpeta compartida la ruta /vagrant por si fuera de utilidad.
+
+
+Para comenzar, cconfiguraremos los aprovisionamientos de los scripts para las cuatro máquinas, al estar en la ruta del vagrant con poner el nombre en el path es suficiente.
 
 
 ## Scripts de aprovisionamiento <a name="id3"></a>
@@ -94,6 +97,7 @@ echo "Instalación de paquetes lemp. Nginx "
 * Instalaremos nginx mostrando algunos mensajes al usuario.
 * Instalamos también mysql para conectarnos al servidor
 * El módulo PHP-FPM lo instalaremos en NFS y utilizaremos el socket tcp para su funcionamiento. También el php-mysql.
+* Instalamos el cliente de NFS para importar almacenamiento compartido del servidor NFS.
 * En el balanceador solamente instalaremos nginx, por lo que usamos este script quitando NFS y PHP.
 
 
@@ -115,6 +119,7 @@ Comentaremos brevemente, ya que todas las líneas del script están comentadas.
 
 * Actualización de paquetes y repositorios
 * Instalamos la versión de mysql actual, que previamente buscamos con apt search la versión de nuestro debian.
+Posteriormente iniciaremos sl script seguro para establecer la contraseña de root.
 
 
 
