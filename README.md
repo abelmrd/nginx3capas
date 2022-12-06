@@ -116,12 +116,12 @@ Comentaremos brevemente, ya que todas las líneas del script están comentadas.
 ### Script servidor NFS <a name="id6"></a>
 
 ```
-echo "Instalacion de paquetes NFS"
+echo "Instalación de paquetes NFS"
     
     sudo apt -y install nfs-kernel-server
     sudo apt -y install php-mysql
 
-echo " Instalacion de php"
+echo " Instalación de php"
     sudo apt -y install php-fpm
     
 
@@ -130,7 +130,7 @@ Comentaremos brevemente, ya que todas las líneas del script están comentadas.
 
 * Actualización de paquetes y repositorios.
 * Instalamos la versión de mysql actual más adecuada para nuestro debian, que previamente buscamos con apt search.
-* Instalamos el interprete de php php-fpm y tambien el de sql, ya que esta tarea la haremos por socket tcp-ip y no en local.
+* Instalamos el interprete de php php-fpm y también el de sql, ya que esta tarea la haremos por socket tcp-ip y no en local.
 * Posteriormente instalaremos otros paquetes php que necesita nuestro cms, como php-mbstring php-gd php-xml..
 
 
@@ -174,7 +174,7 @@ var/www/drupal          192.168.20.10(rw,sync,no_subtree_check)
 var/www/drupal          192.168.20.11(rw,sync,no_subtree_check)
 ```
 
-En último lugar reiniciarmos el servicio, y ya tendríamos el servicio funcionando en el servidor, faltaria montar los clientes.
+En último lugar reiniciaremos el servicio, y ya tendríamos el servicio funcionando en el servidor, faltaría montar los clientes.
 
 ``sudo systemctl restart nfs-kernel-server
 ``
@@ -193,7 +193,7 @@ comunicar las máquinas y que el php sea interpretado por el servidor NFS en lug
 ### Instalacíon de paquetes PHP en NFS <a name="id10"></a>
 
 Como comentamos anteriormente, nuestro gestor de contenido necesita instalar varias librerias php para utilizar nuestro CMS Drupal.
-Las instalaremos todas, aunque si algunas nos falta en el proceso de instalación nos las solicitará.
+Las instalaremos todas, aunque si alguna nos falta en el proceso de instalación nos las solicitará.
 ```
 sudo apt install php
 sudo apt install php-dom
@@ -206,7 +206,7 @@ También necesitamos crear la carpeta  para poder instalar las traducciones al e
 
 ## Configuración de la base de datos para Drupal <a name="id11"></a>
 1. Ejecutamos el script mysql_secure_installation para modificar la contraseña de root y dar mayor seguridad.
-2. Nos conectamos a la base de datos y creamos la base de datos y el usuario. En este caso será drupaldb la base de datos, el usuario drupal y la contraseña 11111111. Veamos cuales serian los comandos a ejecutar en mysql.
+2. Nos conectamos a la base de datos y creamos la base de datos y el usuario. En este caso será drupaldb la base de datos, el usuario drupal y la contraseña 11111111. Veamos cuales serían los comandos a ejecutar en mysql.
 
 ```CREATE DATABASE drupaldb;```
 
@@ -225,9 +225,9 @@ Nota: lo ideal en una situación real sería proporcionar acceso sólo a los hos
 
 ## Configuración de los servidores Nginx <a name="id12"></a>
 
-El servidor nginx no interpretará el codigo php, por lo que unicamente configuraremos la carpeta de montaje de NFS, el archivo de configuración del sitio y algunos permisos.
+El servidor nginx no interpretará el código php, por lo que únicamente configuraremos la carpeta de montaje de NFS, el archivo de configuración del sitio y algunos permisos.
 
-- En primer lugar crearemos la carpeta que habiamos montado en el servidor nfs.
+- En primer lugar, crearemos la carpeta que habíamos montado en el servidor nfs.
 
 `` sudo mkdir /var/www/drupal ``
 
@@ -301,7 +301,7 @@ server {
 
 ``ln -s /etc/nginx/sites-available/drupal /etc/nginx/sites-enabled/``
 
-- El último paso será descomentar la linea server_names_hash_bucket_size 64; del archivo /etc/nginx/nginx.conf
+- El último paso será descomentar la línea server_names_hash_bucket_size 64; del archivo /etc/nginx/nginx.conf
 - Una vez hecho, reiniciamos nginx y ya tenemos configurado el sitio para drupal. 
 
 ## Implementación de aplicación <a name="id14"></a>
@@ -329,7 +329,7 @@ En nuestra práctica será /www/var/drupal.
 
 ## Creación de balanceador de carga <a name="id15"></a>
 
-La configuración del servidor que actuara como balanceador, será nuestro frontal, por tanto, el único servidor visible de cara al usuario final. Para acceder a nuestros sitios web de nginx lo harán a través de esta ip.
+La configuración del servidor que actuará como balanceador, será nuestro frontal, por tanto, el único servidor visible de cara al usuario final. Para acceder a nuestros sitios web de nginx lo harán a través de esta ip.
 La configuración es sencilla, sólo debemos configurar el archivo default de sites-available e implementar las siguientes líneas, o bien borrarlo y crear uno nuevo con este contenido:
 
 ```      
@@ -361,17 +361,17 @@ En esta práctica he cambiado el contenido de la aplicación, añadiendo un "1" 
 ## Puesta en marcha del modo seguro a nuestra aplicación <a name="id16"></a>
 
 Con esta última y definitiva configuración en el balanceador, tendremos el sistema funcionando en modo cifrado SSL.
-El certificado lo generaremos nosotros mismos en local, para un ejemplo real habria que utilizar alguna certificadora como cerftbot.
+El certificado lo generaremos nosotros mismos en local, para un ejemplo real habría que utilizar alguna certificadora como cerftbot.
 
-El comando a utilizar será el siguiente, donde le decimos el nombre que va a generar y tambien la ruta donde lo va a depositar.
+El comando a utilizar será el siguiente, donde le decimos el nombre que va a generar y también la ruta donde lo va a depositar.
 
 ``
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/drupal.key -out /etc/ssl/certs/drupal.pem
 ``
 
-Definiremos el puerto de escucha como el 443, le indicaremos donde estan los certificados generados con el comando anterior
-y por ultimo le decimos al servidor que el certificado ha sido verificado.
-Por tanto la configuración del sitio en el balanceador será la siguiente:
+Definiremos el puerto de escucha como el 443, le indicaremos donde están los certificados generados con el comando anterior
+y por último le decimos al servidor que el certificado ha sido verificado.
+Por tanto, la configuración del sitio en el balanceador será la siguiente:
 
 ```
 upstream backend {
@@ -405,15 +405,15 @@ proxy_ssl_trusted_certificate /etc/ssl/private/drupal.key;
 #### Contenido del github  <a name="id17"></a>
 
 Los archivos alojados al sitio son:
-+ Carpeta imagenes, donde figuran alguna imagen del readme
-+ README.md explicativo
-+ Vagrantfile archivo de configuración de vagrant
-+ Video drupal.mp4 video funcionamiento de aplicación
-+ nfs-drupal.mkv video carpetas exportadas
-+ scriptb.sh script vagrant de balanceador
++ Carpeta imágenes, donde figuran alguna imagen del readme
++ README.md -explicativo
++ Vagrantfile -archivo de configuración de vagrant
++ Video drupal.mp4 -video funcionamiento de aplicación
++ nfs-drupal.mkv -video carpetas exportadas
++ scriptb.sh -script vagrant de balanceador
 
-+ scripte.sh script vagrant de nginx
++ scripte.sh -script vagrant de nginx
 
-+ scriptm.sh script vagrant de mysql
++ scriptm.sh -script vagrant de mysql
 
-+ scriptn.sh script vagrant de NFS
++ scriptn.sh -script vagrant de NFS
