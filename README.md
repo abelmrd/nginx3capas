@@ -23,6 +23,7 @@
 8. [Implementación de la aplicación](#id14)
 9. [Balanceador de carga](#id15)
 10. [Servidor en modo seguro](#id16)
+11. [Contenido del github](id#17)
 
 
 
@@ -399,3 +400,19 @@ proxy_ssl_trusted_certificate /etc/ssl/private/drupal.key;
 }
 }
 ``
+
+#### Contenido del github  <a name="id17"></a>
+
+Los archivos alojados al sitio son:
++ Carpeta imagenes, donde figuran alguna imagen del readme
++ README.md explicativo
++ Vagrantfile archivo de configuración de vagrant
++ Video drupal.mp4 video funcionamiento de aplicación
++ nfs-drupal.mkv video carpetas exportadas
++ scriptb.sh script vagrant de balanceador
+
++ scripte.sh script vagrant de nginx
+
++ scriptm.sh script vagrant de mysql
+
++ scriptn.sh script vagrant de NFS
