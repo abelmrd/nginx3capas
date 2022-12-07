@@ -339,6 +339,9 @@ En nuestra práctica será /www/var/drupal.
 4. Reiniciamos nginx
 ```sudo systemctl restart nginx```
 
+5. Ya podemos acceder por nuestra ip al instalador. 
+Habrá que ir rellenando los pasos con la base de datos que anteriormente creamos, el usuario para acceder etc.
+
 
 ## Creación de balanceador de carga <a name="id15"></a>
 
